@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <title>Login First</title>
     <script type="module">
-      // Import Firebase
+      // use version 12.2.1 from CDN
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
       import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
@@ -16,6 +16,7 @@
   messagingSenderId: "1061899209288",
   appId: "1:1061899209288:web:8630fb47b7b3ded399667d",
   measurementId: "G-5FR0E8HTDG"
+
       };
 
       const app = initializeApp(firebaseConfig);
@@ -32,23 +33,32 @@
           };
           localStorage.setItem("user", JSON.stringify(user));
 
-          // ✅ Dynamically load your React app after login
+          // dynamically load React app
           const script = document.createElement("script");
           script.type = "module";
           script.src = "/src/main.tsx";
           document.body.appendChild(script);
+
+          // optional: hide the login button or login UI
+          const loginDiv = document.getElementById("login-page");
+          if (loginDiv) loginDiv.style.display = "none";
         } catch (error) {
-          console.error(error);
+          console.error("Login failed:", error);
         }
       }
 
-      // Check if already logged in
+      window.login = login;
+
+      // If already logged in, load app immediately
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         const script = document.createElement("script");
         script.type = "module";
         script.src = "/src/main.tsx";
         document.body.appendChild(script);
+
+        const loginDiv = document.getElementById("login-page");
+        if (loginDiv) loginDiv.style.display = "none";
       }
     </script>
   </head>
