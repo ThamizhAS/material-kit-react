@@ -1,4 +1,3 @@
-import { useState, useCallback } from 'react';
 import type { CSSObject, Breakpoint } from '@mui/material/styles';
 
 import { merge } from 'es-toolkit';
@@ -6,8 +5,6 @@ import { merge } from 'es-toolkit';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button'; // 👈 add button
-
 
 import { RouterLink } from 'src/routes/components';
 
@@ -22,10 +19,6 @@ import type { AuthContentProps } from './content';
 import type { MainSectionProps } from '../core/main-section';
 import type { HeaderSectionProps } from '../core/header-section';
 import type { LayoutSectionProps } from '../core/layout-section';
-
-
-// 👇 declare firebase (from CDN in index.html)
-declare const firebase: any;
 
 // ----------------------------------------------------------------------
 
@@ -47,31 +40,6 @@ export function AuthLayout({
   slotProps,
   layoutQuery = 'md',
 }: AuthLayoutProps) {
-  // 🔥 handle login
-  const handleGoogleLogin = async () => {
-    try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await firebase.auth().signInWithPopup(provider);
-
-      const user = result.user;
-      if (user) {
-        localStorage.setItem(
-          'user',
-          JSON.stringify({
-            name: user.displayName,
-            email: user.email,
-            photo: user.photoURL,
-          })
-        );
-        alert(`Welcome ${user.displayName}`);
-        window.location.href = '/dashboard'; // 👈 redirect to dashboard
-      }
-    } catch (err) {
-      console.error('Login failed', err);
-      alert('Login failed. Please try again.');
-    }
-  };
-
   const renderHeader = () => {
     const headerSlotProps: HeaderSectionProps['slotProps'] = { container: { maxWidth: false } };
 
@@ -133,27 +101,23 @@ export function AuthLayout({
           : [slotProps?.main?.sx]),
       ]}
     >
-      <AuthContent {...slotProps?.content}>
-        {children}
-
-        {/* 👇 Google login button */}
-        <Box sx={{ mt: 3, textAlign: 'center' }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleGoogleLogin}
-          >
-            Sign in with Google
-          </Button>
-        </Box>
-      </AuthContent>
+      <AuthContent {...slotProps?.content}>{children}</AuthContent>
     </MainSection>
   );
 
   return (
     <LayoutSection
+      /** **************************************
+       * @Header
+       *************************************** */
       headerSection={renderHeader()}
+      /** **************************************
+       * @Footer
+       *************************************** */
       footerSection={renderFooter()}
+      /** **************************************
+       * @Styles
+       *************************************** */
       cssVars={{ '--layout-auth-content-width': '420px', ...cssVars }}
       sx={[
         (theme) => ({
