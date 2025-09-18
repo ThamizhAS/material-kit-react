@@ -24,28 +24,32 @@
       const provider = new GoogleAuthProvider();
 
       async function login() {
-        try {
-          const result = await signInWithPopup(auth, provider);
-          const user = {
-            name: result.user.displayName,
-            email: result.user.email,
-            photo: result.user.photoURL
-          };
-          localStorage.setItem("user", JSON.stringify(user));
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = {
+      name: result.user.displayName,
+      email: result.user.email,
+      photo: result.user.photoURL
+    };
+    localStorage.setItem("user", JSON.stringify(user));
 
-          // dynamically load React app
-          const script = document.createElement("script");
-          script.type = "module";
-          script.src = "/src/main.tsx";
-          document.body.appendChild(script);
+    // Dynamically load React app
+    const script = document.createElement("script");
+    script.type = "module";
+    script.src = "/src/main.tsx";
+    document.body.appendChild(script);
 
-          // optional: hide the login button or login UI
-          const loginDiv = document.getElementById("login-page");
-          if (loginDiv) loginDiv.style.display = "none";
-        } catch (error) {
-          console.error("Login failed:", error);
-        }
-      }
+    document.getElementById("login-page").style.display = "none";
+  } catch (error) {
+    if (error.code === "auth/popup-closed-by-user") {
+      console.warn("User closed the popup without logging in.");
+      alert("Login popup was closed before completing sign-in. Please try again.");
+    } else {
+      console.error("Login failed:", error);
+      alert("Login failed: " + error.message);
+    }
+  }
+}
 
       window.login = login;
 
