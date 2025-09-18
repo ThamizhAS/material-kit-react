@@ -91,7 +91,7 @@
           script.type = "module";
           script.src = "/src/main.tsx";
           document.body.appendChild(script);
-        document.getElementById('signOutBtn').onclick = signOutUser;
+        
       } else {
         userArea.innerHTML = `<button id="loginBtn" class="btn btn-outline-primary">Sign in with Google</button>`;
         document.getElementById('loginBtn').onclick = signInWithGoogle;
