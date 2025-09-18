@@ -4,10 +4,11 @@
     <meta charset="UTF-8" />
     <title>Login First</title>
     <script type="module">
-      // use version 12.2.1 from CDN
+      // ✅ Import Firebase v12.2.1
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-      import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+      import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
+      // 🔑 Replace with your Firebase config
       const firebaseConfig = {
         apiKey: "AIzaSyCHaNnkWhDHPo4Rrm_7cEjlO7G1zhuLPxU",
   authDomain: "kikasite-251f4.firebaseapp.com",
@@ -23,47 +24,49 @@
       const auth = getAuth(app);
       const provider = new GoogleAuthProvider();
 
+      // ✅ Login with redirect
       async function login() {
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const user = {
-      name: result.user.displayName,
-      email: result.user.email,
-      photo: result.user.photoURL
-    };
-    localStorage.setItem("user", JSON.stringify(user));
-
-    // Dynamically load React app
-    const script = document.createElement("script");
-    script.type = "module";
-    script.src = "/src/main.tsx";
-    document.body.appendChild(script);
-
-    document.getElementById("login-page").style.display = "none";
-  } catch (error) {
-    if (error.code === "auth/popup-closed-by-user") {
-      console.warn("User closed the popup without logging in.");
-      alert("Login popup was closed before completing sign-in. Please try again.");
-    } else {
-      console.error("Login failed:", error);
-      alert("Login failed: " + error.message);
-    }
-  }
-}
-
-      window.login = login;
-
-      // If already logged in, load app immediately
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        const script = document.createElement("script");
-        script.type = "module";
-        script.src = "/src/main.tsx";
-        document.body.appendChild(script);
-
-        const loginDiv = document.getElementById("login-page");
-        if (loginDiv) loginDiv.style.display = "none";
+        await signInWithRedirect(auth, provider);
       }
+      window.login = login; // expose globally
+
+      // ✅ After redirect back, check login result
+      getRedirectResult(auth).then((result) => {
+        if (result?.user) {
+          const user = {
+            name: result.user.displayName,
+            email: result.user.email,
+            photo: result.user.photoURL
+          };
+          localStorage.setItem("user", JSON.stringify(user));
+
+          // load React app
+          const script = document.createElement("script");
+          script.type = "module";
+          script.src = "/src/main.tsx";
+          document.body.appendChild(script);
+
+          // hide login page
+          const loginDiv = document.getElementById("login-page");
+          if (loginDiv) loginDiv.style.display = "none";
+        } else {
+          // if already stored in localStorage, load app
+          const storedUser = localStorage.getItem("user");
+          if (storedUser) {
+            const script = document.createElement("script");
+            script.type = "module";
+            script.src = "/src/main.tsx";
+            document.body.appendChild(script);
+            const loginDiv = document.getElementById("login-page");
+            if (loginDiv) loginDiv.style.display = "none";
+          }
+        }
+      }).catch((error) => {
+        console.error("Login failed:", error);
+        if (error.code === "auth/unauthorized-domain") {
+          alert("Your domain is not authorized in Firebase Console. Add it in Authentication → Settings → Authorized Domains.");
+        }
+      });
     </script>
   </head>
   <body>
