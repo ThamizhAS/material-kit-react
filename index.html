@@ -1,15 +1,60 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Minimal UI Kit</title>
-  </head>
+    <title>Login First</title>
+    <script type="module">
+      // Import Firebase
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+      import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
+      const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const provider = new GoogleAuthProvider();
+
+      async function login() {
+        try {
+          const result = await signInWithPopup(auth, provider);
+          const user = {
+            name: result.user.displayName,
+            email: result.user.email,
+            photo: result.user.photoURL
+          };
+          localStorage.setItem("user", JSON.stringify(user));
+
+          // ✅ Dynamically load your React app after login
+          const script = document.createElement("script");
+          script.type = "module";
+          script.src = "/src/main.tsx";
+          document.body.appendChild(script);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      // Check if already logged in
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const script = document.createElement("script");
+        script.type = "module";
+        script.src = "/src/main.tsx";
+        document.body.appendChild(script);
+      }
+    </script>
+  </head>
   <body>
+    <div id="login-page">
+      <button onclick="login()">Login with Google</button>
+    </div>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
