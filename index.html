@@ -1,62 +1,103 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Login First</title>
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minimal UI Kit</title>
   </head>
+
   <body>
-
-    <div class="card p-5 shadow-lg text-center">
-      <h2 class="mb-4">Login test</h2>
-      <button id="googleLogin" class="btn btn-danger">
-        Sign in with Google
-      </button>
-    </div>
-
-    <!-- ✅ Firebase v12.2.1 Compat SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-auth-compat.js"></script>
-
-    <!-- Config -->
-    <script>
-      const firebaseConfig = {
-        apiKey: "AIzaSyCHaNnkWhDHPo4Rrm_7cEjlO7G1zhuLPxU",
-        authDomain: "kikasite-251f4.firebaseapp.com",
-        projectId: "kikasite-251f4",
-        storageBucket: "kikasite-251f4.firebasestorage.app",
-        messagingSenderId: "1061899209288",
-        appId: "1:1061899209288:web:8630fb47b7b3ded399667d",
-        measurementId: "G-5FR0E8HTDG"
-      };
-      firebase.initializeApp(firebaseConfig);
-
-      const auth = firebase.auth();
-      const provider = new firebase.auth.GoogleAuthProvider();
-
-      // Handle login click
-      document.getElementById("googleLogin").addEventListener("click", () => {
-        auth.signInWithRedirect(provider);
-      });
-
-      // Handle redirect result
-      auth.getRedirectResult()
-        .then((result) => {
-          if (result.user) {
-            const user = result.user;
-            localStorage.setItem("user", JSON.stringify({
-              name: user.displayName,
-              email: user.email,
-              photo: user.photoURL
-            }));
-            window.location.href = "main.html";
-          }
-        })
-        .catch((error) => {
-          console.error("Login error:", error);
-          alert(error.message);
-        });
-    </script>
-
     <div id="root"></div>
+
+  <script type="module">
+    // ------------- replace with the firebaseConfig object from your Firebase console -------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyCHaNnkWhDHPo4Rrm_7cEjlO7G1zhuLPxU",
+  authDomain: "kikasite-251f4.firebaseapp.com",
+  projectId: "kikasite-251f4",
+  storageBucket: "kikasite-251f4.firebasestorage.app",
+  messagingSenderId: "1061899209288",
+  appId: "1:1061899209288:web:8630fb47b7b3ded399667d",
+  measurementId: "G-5FR0E8HTDG"
+
+    };
+    // -------------------------------------------------------------------------------------------
+
+    // Import modular SDK functions
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    // Initialize
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    // UI refs
+    const loginBtn = document.getElementById('loginBtn');
+    const userArea = document.getElementById('user-area');
+    const status = document.getElementById('status');
+
+    loginBtn.onclick = () => signInWithGoogle();
+
+    async function signInWithGoogle() {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        // Save/update user info in Firestore under collection "users" with doc id = uid
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          name: user.displayName || null,
+          email: user.email || null,
+          photoURL: user.photoURL || null,
+          lastSeen: serverTimestamp()
+        }, { merge: true });
+
+        status.textContent = 'Signed in and saved profile to Firestore.';
+      } catch (err) {
+        console.error("Sign in error:", err);
+        status.textContent = 'Sign in failed: ' + err.message;
+      }
+    }
+
+    async function signOutUser() {
+      await signOut(auth);
+      status.textContent = 'Signed out.';
+    }
+
+    // Update UI on auth state change
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        // get profile from Firestore (optional)
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const data = snap.exists() ? snap.data() : {};
+        // dynamically load React app
+          const script = document.createElement("script");
+          script.type = "module";
+          script.src = "/src/main.tsx";
+          document.body.appendChild(script);
+        document.getElementById('signOutBtn').onclick = signOutUser;
+      } else {
+        userArea.innerHTML = `<button id="loginBtn" class="btn btn-outline-primary">Sign in with Google</button>`;
+        document.getElementById('loginBtn').onclick = signInWithGoogle;
+      }
+    });
+  </script>
+    
   </body>
 </html>
