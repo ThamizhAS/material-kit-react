@@ -3,76 +3,61 @@
   <head>
     <meta charset="UTF-8" />
     <title>Login First</title>
-    <script type="module">
-      // ✅ Import Firebase v12.2.1
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-      import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-
-      // 🔑 Replace with your Firebase config
-      const firebaseConfig = {
-        apiKey: "AIzaSyCHaNnkWhDHPo4Rrm_7cEjlO7G1zhuLPxU",
-  authDomain: "kikasite-251f4.firebaseapp.com",
-  projectId: "kikasite-251f4",
-  storageBucket: "kikasite-251f4.firebasestorage.app",
-  messagingSenderId: "1061899209288",
-  appId: "1:1061899209288:web:8630fb47b7b3ded399667d",
-  measurementId: "G-5FR0E8HTDG"
-
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const provider = new GoogleAuthProvider();
-
-      // ✅ Login with redirect
-      async function login() {
-        await signInWithRedirect(auth, provider);
-      }
-      window.login = login; // expose globally
-
-      // ✅ After redirect back, check login result
-      getRedirectResult(auth).then((result) => {
-        if (result?.user) {
-          const user = {
-            name: result.user.displayName,
-            email: result.user.email,
-            photo: result.user.photoURL
-          };
-          localStorage.setItem("user", JSON.stringify(user));
-
-          // load React app
-          const script = document.createElement("script");
-          script.type = "module";
-          script.src = "/src/main.tsx";
-          document.body.appendChild(script);
-
-          // hide login page
-          const loginDiv = document.getElementById("login-page");
-          if (loginDiv) loginDiv.style.display = "none";
-        } else {
-          // if already stored in localStorage, load app
-          const storedUser = localStorage.getItem("user");
-          if (storedUser) {
-            const script = document.createElement("script");
-            script.type = "module";
-            script.src = "/src/main.tsx";
-            document.body.appendChild(script);
-            const loginDiv = document.getElementById("login-page");
-            if (loginDiv) loginDiv.style.display = "none";
-          }
-        }
-      }).catch((error) => {
-        console.error("Login failed:", error);
-        if (error.code === "auth/unauthorized-domain") {
-          alert("Your domain is not authorized in Firebase Console. Add it in Authentication → Settings → Authorized Domains.");
-        }
-      });
-    </script>
+    
   </head>
   <body>
-    <div id="login-page">
-      <button onclick="login()">Login with Google</button>
-    </div>
+
+      <div class="card p-5 shadow-lg text-center">
+    <h2 class="mb-4">Login test</h2>
+    <button id="googleLogin" class="btn btn-danger">
+      Sign in with Google
+    </button>
+  </div>
+
+  <!-- ✅ Firebase v12.2.1 Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-auth-compat.js"></script>
+
+  <!-- Config -->
+  <script>
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCHaNnkWhDHPo4Rrm_7cEjlO7G1zhuLPxU",
+  authDomain: "kikasite-251f4.firebaseapp.com",
+  projectId: "kikasite-251f4",
+  storageBucket: "kikasite-251f4.firebasestorage.app",
+  messagingSenderId: "1061899209288",
+  appId: "1:1061899209288:web:8630fb47b7b3ded399667d",
+  measurementId: "G-5FR0E8HTDG"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+</script>
+
+  <script>
+    const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    document.getElementById("googleLogin").addEventListener("click", () => {
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          // Save user locally (optional)
+          localStorage.setItem("user", JSON.stringify({
+            name: user.displayName,
+            email: user.email,
+            photo: user.photoURL
+          }));
+          // Redirect
+          window.location.href = "dashboard.html";
+        })
+        .catch((error) => {
+          console.error("Login error:", error);
+          alert(error.message);
+        });
+    });
+  </script>
     <div id="root"></div>
   </body>
 </html>
