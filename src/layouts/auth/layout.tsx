@@ -1,4 +1,5 @@
 import type { CSSObject, Breakpoint } from '@mui/material/styles';
+
 import { merge } from 'es-toolkit';
 
 import Box from '@mui/material/Box';
@@ -6,7 +7,9 @@ import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button'; // 👈 add button
 
+
 import { RouterLink } from 'src/routes/components';
+
 import { Logo } from 'src/components/logo';
 
 import { AuthContent } from './content';
@@ -18,6 +21,7 @@ import type { AuthContentProps } from './content';
 import type { MainSectionProps } from '../core/main-section';
 import type { HeaderSectionProps } from '../core/header-section';
 import type { LayoutSectionProps } from '../core/layout-section';
+
 
 // 👇 declare firebase (from CDN in index.html)
 declare const firebase: any;
