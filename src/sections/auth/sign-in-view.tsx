@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -10,15 +11,40 @@ import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 
 import { useRouter } from 'src/routes/hooks';
-
 import { Iconify } from 'src/components/iconify';
+
+// 👇 add this for Firebase CDN global
+declare const firebase: any;
 
 // ----------------------------------------------------------------------
 
 export function SignInView() {
   const router = useRouter();
-
   const [showPassword, setShowPassword] = useState(false);
+
+  // 👇 Google login handler
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const result = await firebase.auth().signInWithPopup(provider);
+
+      const user = result.user;
+      if (user) {
+        localStorage.setItem(
+          'user',
+          JSON.stringify({
+            name: user.displayName,
+            email: user.email,
+            photo: user.photoURL,
+          })
+        );
+        router.push('/dashboard'); // 👈 redirect to dashboard
+      }
+    } catch (err) {
+      console.error('Login failed', err);
+      alert('Login failed. Please try again.');
+    }
+  };
 
   const handleSignIn = useCallback(() => {
     router.push('/');
@@ -95,9 +121,7 @@ export function SignInView() {
         <Typography variant="h5">Sign in</Typography>
         <Typography
           variant="body2"
-          sx={{
-            color: 'text.secondary',
-          }}
+          sx={{ color: 'text.secondary' }}
         >
           Don’t have an account?
           <Link variant="subtitle2" sx={{ ml: 0.5 }}>
@@ -105,23 +129,17 @@ export function SignInView() {
           </Link>
         </Typography>
       </Box>
+
       {renderForm}
+
       <Divider sx={{ my: 3, '&::before, &::after': { borderTopStyle: 'dashed' } }}>
-        <Typography
-          variant="overline"
-          sx={{ color: 'text.secondary', fontWeight: 'fontWeightMedium' }}
-        >
+        <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'fontWeightMedium' }}>
           OR
         </Typography>
       </Divider>
-      <Box
-        sx={{
-          gap: 1,
-          display: 'flex',
-          justifyContent: 'center',
-        }}
-      >
-        <IconButton color="inherit">
+
+      <Box sx={{ gap: 1, display: 'flex', justifyContent: 'center' }}>
+        <IconButton color="inherit" onClick={handleGoogleLogin}>
           <Iconify width={22} icon="socials:google" />
         </IconButton>
         <IconButton color="inherit">
