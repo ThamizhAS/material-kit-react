@@ -45,5 +45,43 @@
         });
     });
   </script>
+
+  <div class="card p-5 shadow-lg text-center">
+    <h2 class="mb-4">Login test</h2>
+    <button id="googleLogin" class="btn btn-danger">
+      Sign in with Google
+    </button>
+  </div>
+
+  <!-- ✅ Firebase v12.2.1 Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-auth-compat.js"></script>
+
+  <!-- Config -->
+  <script src="firebase-config.js"></script>
+
+  <script>
+    const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    document.getElementById("googleLogin").addEventListener("click", () => {
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          // Save user locally (optional)
+          localStorage.setItem("user", JSON.stringify({
+            name: user.displayName,
+            email: user.email,
+            photo: user.photoURL
+          }));
+          // Redirect
+          window.location.href = "dashboard.html";
+        })
+        .catch((error) => {
+          console.error("Login error:", error);
+          alert(error.message);
+        });
+    });
+  </script>
 </body>
 </html>
